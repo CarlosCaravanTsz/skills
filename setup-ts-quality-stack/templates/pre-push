@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+set -eu
+
+if [ "${SKIP_PRE_PUSH:-0}" = "1" ]; then
+  exit 0
+fi
+
+echo "Running pre-push verification (check:fast)..."
+bun run check:fast

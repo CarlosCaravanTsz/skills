@@ -1,0 +1,36 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 100,
+  "semi": false,
+  "sortImports": {
+    "internalPattern": [
+      "@your-org/",
+      "@/"
+    ]
+  },
+  "sortTailwindcss": {
+    "stylesheet": "./apps/web/app/globals.css",
+    "functions": [
+      "cn",
+      "cva"
+    ]
+  },
+  "ignorePatterns": [
+    "**/*.md",
+    "**/.next",
+    ".agents",
+    ".claude",
+    "reports",
+    ".stryker-tmp"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "apps/web/components/ui/**"
+      ],
+      "options": {
+        "sortTailwindcss": false
+      }
+    }
+  ]
+}
