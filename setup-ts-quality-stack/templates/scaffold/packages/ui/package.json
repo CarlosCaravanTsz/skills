@@ -1,0 +1,22 @@
+{
+  "name": "@org/ui",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./button": "./src/button.tsx"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test:unit": "vitest run --passWithNoTests --exclude \"**/*.int.test.ts\""
+  },
+  "peerDependencies": {
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "react": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  // Shared compiler rules. TS 7 (native) is invoked as `tsc`. Each workspace tsconfig extends this and sets
+  // its own `include`, `types` (TS 7 defaults to []), `lib` and JSX.
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "resolveJsonModule": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": []
+  }
+}

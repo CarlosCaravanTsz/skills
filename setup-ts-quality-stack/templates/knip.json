@@ -1,21 +1,18 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignore": [
-    ".agents/**",
-    "apps/web/components/ui/**",
-    "apps/web/public/**",
-    "supabase/**"
-  ],
+  "ignore": [".agents/**", "apps/web/components/ui/**", "apps/web/public/**"],
+  "includeEntryExports": true,
   "workspaces": {
     ".": {
       "entry": ["scripts/*.mjs"],
-      "ignoreDependencies": ["@swc/core"]
+      "ignoreDependencies": ["@swc/core", "oxlint-tsgolint"]
     },
-    "apps/web": {
-      "entry": [
-        "app/**/{page,layout,loading,error,not-found,global-error,template,default,route}.{ts,tsx}"
-      ]
+    "apps/web": {},
+    "apps/api": {
+      "entry": ["src/main.ts"]
     },
-    "packages/domain": {}
+    "packages/*": {
+      "includeSubpathExports": true
+    }
   }
 }

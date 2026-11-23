@@ -5,6 +5,9 @@
 //   - Root files (index.ts, client.ts, server.ts) are public entry points.
 //   - Any subfolder (lib/, tests/) is private.
 //   - Tests under <pkg>/tests/ exercise packages strictly through entry points.
+//   - Packages are flat: one tier under PACKAGES_ROOT; internals may nest freely.
+// Only PACKAGES_ROOT should ever need editing. Layering (which package may use which) goes in the
+// commented stub at the end of `forbidden`; examples in references/layering-examples.md.
 
 const PACKAGES_ROOT = "src/packages"
 const R = PACKAGES_ROOT
@@ -48,6 +51,20 @@ module.exports = {
       to: { path: `^${R}/[^/]+/tests/` },
     },
     {
+      name: "not-to-unresolvable",
+      comment: "Every import must resolve.",
+      severity: "error",
+      from: {},
+      to: { couldNotResolve: true },
+    },
+    {
+      name: "no-undeclared-npm-dependency",
+      comment: "npm packages must be declared in package.json.",
+      severity: "error",
+      from: {},
+      to: { dependencyTypes: ["npm-no-pkg", "npm-unknown"] },
+    },
+    {
       name: "no-circular",
       comment: "No runtime dependency cycles (type-only cycles allowed).",
       severity: "error",
@@ -60,14 +77,25 @@ module.exports = {
         },
       },
     },
+
+    // --- LAYERING (optional, edit per repo) -------------------------------------------------
+    // {
+    //   name: "ui-may-not-depend-on-billing",
+    //   severity: "error",
+    //   from: { path: `^${R}/ui/` },
+    //   to: { path: `^${R}/billing/` },
+    // },
   ],
   options: {
+    // TS 7 (native) has no JS compiler API: parse with SWC, never read tsconfig through `typescript`.
     parser: "swc",
-    doNotFollow: { path: "node_modules" },
-    tsConfig: { fileName: "tsconfig.json" },
     tsPreCompilationDeps: false,
+    doNotFollow: { path: "node_modules" },
+    exclude: { path: "(^|/)(\\.next|dist|coverage|reports|\\.stryker-tmp)/|\\.d\\.ts$" },
+    builtInModules: { add: ["bun", "bun:test", "bun:sqlite", "bun:ffi", "bun:jsc"] },
     enhancedResolveOptions: {
-      extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
+      exportsFields: ["exports"],
+      extensions: [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".json"],
     },
   },
 }

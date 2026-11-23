@@ -5,7 +5,10 @@
  *
  * Usage:
  *   node scripts/check-file-size.mjs                  # scan entire repo
- *   node scripts/check-file-size.mjs path/a path/b    # check specific files (e.g. git staged)
+ *   node scripts/check-file-size.mjs path/a path/b    # check specific files
+ *   FILE_SIZE_CONTENT_ROOT=/tmp/x node scripts/check-file-size.mjs path/a
+ *     # paths stay repo-relative (allowlist keys), bytes are read from /tmp/x/<path>;
+ *     # used by the pre-commit hook to measure STAGED blobs, not the working tree.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
 import path from "node:path"
@@ -33,7 +36,20 @@ const IGNORED_PREFIXES = [
 
 const IGNORED_FILENAMES = new Set(["next-env.d.ts"])
 
+// Generated directories ignored at any depth (e.g. apps/web/.next, packages/core/.stryker-tmp).
+const IGNORED_DIR_NAMES = new Set([
+  "node_modules",
+  ".git",
+  ".next",
+  ".turbo",
+  "dist",
+  "coverage",
+  "reports",
+  ".stryker-tmp",
+])
+
 const ROOT = process.cwd()
+const CONTENT_ROOT = process.env.FILE_SIZE_CONTENT_ROOT ?? ROOT
 const ALLOWLIST_PATH = path.join(ROOT, "scripts", "file-size-allowlist.json")
 
 /** @returns {Record<string, number>} */
@@ -46,7 +62,7 @@ const loadAllowlist = () => {
 const shouldIgnore = (relPath) => {
   const normalized = relPath.replaceAll("\\", "/").replace(/^\.\//, "")
   if (IGNORED_FILENAMES.has(path.basename(normalized))) return true
-  if (normalized.includes("/node_modules/") || normalized.includes("/.next/")) return true
+  if (normalized.split("/").slice(0, -1).some((part) => IGNORED_DIR_NAMES.has(part))) return true
   if (IGNORED_PREFIXES.some((prefix) => normalized.startsWith(prefix))) return true
   return !CHECKED_EXTENSIONS.has(path.extname(normalized))
 }
@@ -57,12 +73,7 @@ const walk = (dir, out) => {
     const abs = path.join(dir, entry.name)
     const rel = path.relative(ROOT, abs).replaceAll("\\", "/")
     if (entry.isDirectory()) {
-      if (
-        entry.name === "node_modules" ||
-        entry.name === ".git" ||
-        entry.name === ".next" ||
-        IGNORED_PREFIXES.some((p) => `${rel}/`.startsWith(p))
-      ) {
+      if (IGNORED_DIR_NAMES.has(entry.name) || IGNORED_PREFIXES.some((p) => `${rel}/`.startsWith(p))) {
         continue
       }
       walk(abs, out)
@@ -78,7 +89,7 @@ const targets = []
 if (cliPaths.length > 0) {
   for (const raw of cliPaths) {
     const rel = path.relative(ROOT, path.resolve(ROOT, raw)).replaceAll("\\", "/")
-    if (!shouldIgnore(rel) && existsSync(path.resolve(ROOT, rel))) {
+    if (!shouldIgnore(rel) && existsSync(path.resolve(CONTENT_ROOT, rel))) {
       targets.push(rel)
     }
   }
@@ -93,7 +104,7 @@ const violations = []
 const staleAllowlist = []
 
 for (const rel of targets.sort()) {
-  const bytes = statSync(path.resolve(ROOT, rel)).size
+  const bytes = statSync(path.resolve(CONTENT_ROOT, rel)).size
   const tokens = Math.ceil(bytes / BYTES_PER_TOKEN)
   const allowlistedBytes = allowlist[rel]
 

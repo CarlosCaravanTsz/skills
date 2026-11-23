@@ -1,0 +1,55 @@
+{
+  "name": "@org/root",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.4.5",
+  "engines": {
+    "node": ">=24"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "catalog": {
+    "@types/bun": "1.4.5",
+    "@types/node": "26.6.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@stryker-mutator/core": "10.1.1",
+    "@stryker-mutator/vitest-runner": "10.1.1",
+    "effect": "4.1.5",
+    "fast-check": "4.11.0",
+    "next": "16.4.6",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "typescript": "7.0.2",
+    "vitest": "5.1.1"
+  },
+  "scripts": {
+    "prepare": "git config core.hooksPath .githooks || true",
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint --type-aware",
+    "lint:boundaries": "depcruise apps packages -c .dependency-cruiser.cjs && depcruise apps packages -c .dependency-cruiser.cjs -T json | node scripts/check-workspace-deps.mjs",
+    "lint:size": "node scripts/check-file-size.mjs",
+    "lint:deadcode": "knip",
+    "typecheck": "turbo run typecheck",
+    "test:unit": "turbo run test:unit",
+    "test:integration": "turbo run test:integration",
+    "test:mutate": "turbo run test:mutate",
+    "check:fast": "bun run fmt:check && bun run lint && bun run lint:boundaries && bun run lint:size && bun run lint:deadcode && bun run typecheck && bun run test:unit",
+    "check": "bun run check:fast && bun run test:integration"
+  },
+  "devDependencies": {
+    "@swc/core": "1.16.22",
+    "dependency-cruiser": "18.9.0",
+    "knip": "6.48.0",
+    "oxfmt": "0.80.0",
+    "oxlint": "1.95.0",
+    "oxlint-tsgolint": "7.0.2008",
+    "turbo": "2.11.13",
+    "typescript": "catalog:"
+  }
+}

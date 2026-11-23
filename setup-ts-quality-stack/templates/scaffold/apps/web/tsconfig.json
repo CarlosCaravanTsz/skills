@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "jsx": "preserve",
+    "types": ["node"],
+    "plugins": [{ "name": "next" }]
+    // If next/link or a UI primitive fights exactOptionalPropertyTypes, set it to false HERE only.
+  },
+  "include": ["next-env.d.ts", ".next/types/**/*.ts", "app", "*.ts"]
+}
