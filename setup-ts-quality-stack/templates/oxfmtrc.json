@@ -4,7 +4,7 @@
   "semi": false,
   "sortImports": {
     "internalPattern": [
-      "@your-org/",
+      "@org/",
       "@/"
     ]
   },
@@ -18,10 +18,13 @@
   "ignorePatterns": [
     "**/*.md",
     "**/.next",
+    "**/.turbo",
+    "**/dist",
     ".agents",
     ".claude",
     "reports",
-    ".stryker-tmp"
+    "**/.stryker-tmp",
+    "bun.lock"
   ],
   "overrides": [
     {

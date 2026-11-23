@@ -1,6 +1,18 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "unicorn", "oxc", "import", "vitest", "react", "jsx-a11y", "nextjs"],
+  "options": {
+    "typeAware": true
+  },
+  "plugins": [
+    "typescript",
+    "unicorn",
+    "oxc",
+    "import",
+    "vitest",
+    "react",
+    "jsx-a11y",
+    "nextjs"
+  ],
   "categories": {
     "correctness": "error",
     "suspicious": "warn"
@@ -8,10 +20,12 @@
   "ignorePatterns": [
     "**/node_modules/**",
     "**/.next/**",
+    "**/.turbo/**",
+    "**/dist/**",
     "**/next-env.d.ts",
+    "**/.stryker-tmp/**",
     "apps/web/components/ui/**",
     "reports/**",
-    ".stryker-tmp/**",
     ".agents/**",
     "scripts/**"
   ],
@@ -55,7 +69,9 @@
   },
   "overrides": [
     {
-      "files": ["packages/domain/src/**"],
+      "files": [
+        "packages/core/src/**"
+      ],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -69,9 +85,12 @@
                   "Clock",
                   "Random",
                   "ManagedRuntime",
-                  "Console"
+                  "Console",
+                  "Config",
+                  "ConfigProvider",
+                  "References"
                 ],
-                "message": "Domain must stay pure Effect (R = never): pass time and inputs explicitly."
+                "message": "core is pure: no services, layers, config, clocks or randomness. Pass time and inputs explicitly."
               }
             ],
             "patterns": [
@@ -80,21 +99,33 @@
                   "effect/*",
                   "!effect/Schema",
                   "!effect/Option",
-                  "!effect/Either",
+                  "!effect/Result",
                   "!effect/Array",
                   "!effect/Order",
                   "!effect/Equal",
+                  "!effect/Equivalence",
                   "!effect/Data",
                   "!effect/BigDecimal",
                   "!effect/Function",
                   "!effect/Predicate",
-                  "!effect/Result"
+                  "!effect/Match",
+                  "!effect/Brand",
+                  "!effect/Struct",
+                  "!effect/Record",
+                  "!effect/Tuple"
                 ],
-                "message": "Do not import IO effect modules in pure domain code."
+                "message": "Only pure Effect modules in core (no IO, services or runtime modules)."
               },
               {
-                "group": ["node:*", "node:*/**", "@effect/**", "@your-org/**"],
-                "message": "Domain must not depend on IO or sibling packages."
+                "group": [
+                  "node:*",
+                  "node:*/**",
+                  "bun",
+                  "bun:*",
+                  "@effect/**",
+                  "@org/**"
+                ],
+                "message": "core must not depend on IO, the runtime, or other workspaces."
               }
             ]
           }
@@ -102,9 +133,19 @@
       }
     },
     {
-      "files": ["apps/web/**"],
+      "files": [
+        "apps/web/**"
+      ],
       "rules": {
-        "no-console": ["error", { "allow": ["error", "warn"] }]
+        "no-console": [
+          "error",
+          {
+            "allow": [
+              "error",
+              "warn"
+            ]
+          }
+        ]
       }
     },
     {

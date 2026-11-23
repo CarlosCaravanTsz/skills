@@ -1,0 +1,11 @@
+# Bun install policy (the Bun version itself is pinned by package.json#packageManager).
+[install]
+# Write exact versions when adding dependencies (catalog entries in package.json are exact too).
+exact = true
+# Each workspace sees only the dependencies it declares: no phantom deps, no accidental hoisting.
+linker = "isolated"
+
+[test]
+# Vitest is the only test runner (paved path). Point `bun test` at a folder that does not exist so it
+# cannot silently run the Vitest suites with the wrong runner.
+root = ".bun-test-disabled"

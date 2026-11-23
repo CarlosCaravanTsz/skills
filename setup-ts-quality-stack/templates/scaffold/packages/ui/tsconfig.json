@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx"
+    // If a UI primitive library (Radix, React Aria, ...) fights exactOptionalPropertyTypes,
+    // set "exactOptionalPropertyTypes": false HERE only, never in tsconfig.base.json.
+  },
+  "include": ["src", "test"]
+}

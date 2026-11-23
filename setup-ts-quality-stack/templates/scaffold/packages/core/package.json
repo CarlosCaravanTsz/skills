@@ -1,0 +1,25 @@
+{
+  "name": "@org/core",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test:unit": "vitest run --exclude \"**/*.int.test.ts\"",
+    "test:integration": "vitest run --passWithNoTests .int.test.ts",
+    "test:mutate": "stryker run"
+  },
+  "dependencies": {
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@stryker-mutator/core": "catalog:",
+    "@stryker-mutator/vitest-runner": "catalog:",
+    "fast-check": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

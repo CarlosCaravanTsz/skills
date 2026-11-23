@@ -1,27 +1,15 @@
 #!/usr/bin/env sh
 set -eu
-# Paths are newline-separated; never glob-expand them (Next.js routes contain `[id]`, `(app)`).
+# Fast (<5s) pre-commit hook. Staged-content checks (forbidden files, lockfile coherence, token budget,
+# formatting) live in scripts/staged-files.mjs, which reads the index with NUL-delimited paths.
+# Adapt MIGRATIONS_DIR (or delete the migrations block if the repo has none).
 set -f
 IFS='
 '
-
-# Fast (<5s) pre-commit hook on staged files only.
-# Adapt MIGRATIONS_DIR, LOCKFILE, and EXEC (bunx / pnpm exec / npx) to your repo.
 MIGRATIONS_DIR="supabase/migrations"
-LOCKFILE="bun.lock"
-EXEC="bunx --no-install"
 
-STAGED_ALL=$(git diff --cached --name-only --diff-filter=ACMR)
-
-# 1. Block generated / local secret files
-FORBIDDEN=$([ -z "$STAGED_ALL" ] || printf '%s\n' "$STAGED_ALL" | grep -E '(^|/)\.next/|\.tsbuildinfo$|(^|/)\.env\.local$|(^|/)signing_keys\.json$|^reports/|^coverage/|^\.stryker-tmp/' || true)
-if [ -n "$FORBIDDEN" ]; then
-  echo "✗ Pre-commit blocked: generated or local-only files are staged:" >&2
-  printf '%s\n' "$FORBIDDEN" | sed 's/^/  - /' >&2
-  exit 1
-fi
-
-# 2. Forward-only migrations guard (blocks M/D on migrations already in master/main)
+# Forward-only migrations guard: blocks modify/delete of migrations already on main/master.
+# Override for intentional squashes: ALLOW_MIGRATION_EDIT=1 git commit ...
 if [ "${ALLOW_MIGRATION_EDIT:-0}" != "1" ] && [ -d "$MIGRATIONS_DIR" ]; then
   BASE_REF=""
   for candidate in origin/main main origin/master master; do
@@ -60,28 +48,4 @@ if [ "${ALLOW_MIGRATION_EDIT:-0}" != "1" ] && [ -d "$MIGRATIONS_DIR" ]; then
   fi
 fi
 
-# 3. Lockfile coherence guard
-if [ "${ALLOW_LOCKFILE_ONLY:-0}" != "1" ]; then
-  HAS_LOCK=$(printf '%s\n' "$STAGED_ALL" | grep -Fx "$LOCKFILE" || true)
-  HAS_PKG=$(printf '%s\n' "$STAGED_ALL" | grep -E '(^|/)package\.json$' || true)
-  if [ -n "$HAS_LOCK" ] && [ -z "$HAS_PKG" ]; then
-    echo "✗ Pre-commit blocked: $LOCKFILE is staged without any package.json change." >&2
-    echo "  Override if intentional: ALLOW_LOCKFILE_ONLY=1 git commit ..." >&2
-    exit 1
-  fi
-fi
-
-if [ -z "$STAGED_ALL" ]; then
-  exit 0
-fi
-
-# 4. File-size token budget (5.5k tokens ≈ 22 KB) on staged files
-# shellcheck disable=SC2086
-node scripts/check-file-size.mjs $STAGED_ALL
-
-# 5. Formatting check on staged files only
-FORMATTABLE=$(printf '%s\n' "$STAGED_ALL" | grep -E '\.(ts|tsx|js|jsx|mjs|cjs|json|css|html)$' || true)
-if [ -n "$FORMATTABLE" ]; then
-  # shellcheck disable=SC2086
-  $EXEC oxfmt --check --no-error-on-unmatched-pattern $FORMATTABLE
-fi
+exec node scripts/staged-files.mjs
